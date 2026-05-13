@@ -1,6 +1,6 @@
 # karoowind
 
-A [Hammerhead Karoo 3](https://www.hammerhead.io/) extension that controls the [Wahoo Headwind](https://www.wahoofitness.com/devices/accessories/kickr-headwind) smart fan over Bluetooth LE.
+A [Hammerhead Karoo 3](https://www.hammerhead.io/) extension that controls the [Wahoo Headwind](https://www.wahoofitness.com/devices/indoor-cycling/accessories/kickr-headwind-buy-us) smart fan over Bluetooth LE.
 
 ## Features
 
