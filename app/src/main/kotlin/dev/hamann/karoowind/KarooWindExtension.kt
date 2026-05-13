@@ -1,55 +1,51 @@
 package dev.hamann.karoowind
 
-import io.hammerhead.karooext.KarooExtension
 import io.hammerhead.karooext.KarooSystemService
+import io.hammerhead.karooext.extension.KarooExtension
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.StreamState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class KarooWindExtension : KarooExtension("karoowind", BuildConfig.VERSION_NAME) {
+class KarooWindExtension : KarooExtension("karoowind", "1.0") {
 
-    private val scope = CoroutineScope(Dispatchers.Main + Job())
     private lateinit var karooSystem: KarooSystemService
     private lateinit var headwindManager: HeadwindManager
+    private var serviceJob: Job? = null
 
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
         karooSystem = KarooSystemService(applicationContext)
         headwindManager = HeadwindManager(applicationContext)
-    }
 
-    override fun onStartCommand(intent: android.content.Intent?, flags: Int, startId: Int): Int {
-        karooSystem.connect { connected ->
-            if (connected) {
-                Timber.i("Connected to Karoo system")
-                startObservingRideData()
-            }
-        }
-        headwindManager.connect()
-        return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun startObservingRideData() {
-        karooSystem.streamDataFlow(DataType.Type.HEART_RATE)
-            .onEach { streamState ->
-                if (streamState is StreamState.Streaming) {
-                    val hr = streamState.dataPoint.singleValue?.toInt() ?: return@onEach
-                    Timber.d("Heart rate: $hr bpm")
-                    headwindManager.setSpeedFromHeartRate(hr)
+        serviceJob = CoroutineScope(Dispatchers.IO).launch {
+            karooSystem.connect { connected ->
+                if (connected) {
+                    Timber.i("Connected to Karoo system")
                 }
             }
-            .launchIn(scope)
+            launch {
+                karooSystem.streamDataFlow(DataType.Type.HEART_RATE)
+                    .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue?.toInt() }
+                    .collect { hr ->
+                        Timber.d("Heart rate: $hr bpm")
+                        headwindManager.setSpeedFromHeartRate(hr)
+                    }
+            }
+            headwindManager.connect()
+        }
     }
 
     override fun onDestroy() {
-        headwindManager.disconnect()
+        serviceJob?.cancel()
+        serviceJob = null
         karooSystem.disconnect()
+        headwindManager.disconnect()
         super.onDestroy()
     }
 }

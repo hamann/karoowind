@@ -1,3 +1,10 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val f = file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 pluginManagement {
     repositories {
         google()
@@ -14,12 +21,10 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
             credentials {
-                username = providers.gradleProperty("gpr.user")
-                    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
-                    .get()
-                password = providers.gradleProperty("gpr.key")
-                    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
-                    .get()
+                username = localProperties.getProperty("gpr.user")
+                    ?: providers.environmentVariable("GITHUB_ACTOR").getOrElse("")
+                password = localProperties.getProperty("gpr.key")
+                    ?: providers.environmentVariable("GITHUB_TOKEN").getOrElse("")
             }
         }
     }
