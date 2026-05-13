@@ -18,9 +18,13 @@ local.properties
 out/
 captures/
 
-# Nix
+# Nix / direnv
 result
 result-*
+.direnv/
+
+# Kotlin compiler
+.kotlin/
 
 # Secrets
 .env
