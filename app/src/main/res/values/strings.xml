@@ -2,4 +2,8 @@
 <resources>
     <string name="app_name">KarooWind</string>
     <string name="app_description">Controls the Wahoo Headwind fan based on ride data</string>
+    <string name="tile_name">Headwind Speed</string>
+    <string name="tile_description">Fan speed tile with AUTO/MANUAL control</string>
+    <string name="action_fan_up">Fan Speed Up</string>
+    <string name="action_fan_down">Fan Speed Down</string>
 </resources>

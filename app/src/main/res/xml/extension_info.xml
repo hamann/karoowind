@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ExtensionInfo
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:name="@string/app_name"
-    android:description="@string/app_description"
-    android:icon="@mipmap/ic_launcher" />
+    displayName="@string/app_name"
+    icon="@mipmap/ic_launcher"
+    id="karoowind">
+    <DataType
+        description="@string/tile_description"
+        displayName="@string/tile_name"
+        graphical="true"
+        icon="@mipmap/ic_launcher"
+        typeId="headwind-speed" />
+    <BonusAction
+        displayName="@string/action_fan_up"
+        actionId="fan-up" />
+    <BonusAction
+        displayName="@string/action_fan_down"
+        actionId="fan-down" />
+</ExtensionInfo>

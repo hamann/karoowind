@@ -1,6 +1,7 @@
 package dev.hamann.karoowind
 
 import io.hammerhead.karooext.KarooSystemService
+import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.extension.KarooExtension
 import io.hammerhead.karooext.models.DataType
 import io.hammerhead.karooext.models.StreamState
@@ -17,6 +18,10 @@ class KarooWindExtension : KarooExtension("karoowind", "1.0") {
     private lateinit var headwindManager: HeadwindManager
     private var serviceJob: Job? = null
 
+    override val types: List<DataTypeImpl> by lazy {
+        listOf(HeadwindDataType(headwindManager, extension))
+    }
+
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
@@ -25,9 +30,7 @@ class KarooWindExtension : KarooExtension("karoowind", "1.0") {
 
         serviceJob = CoroutineScope(Dispatchers.IO).launch {
             karooSystem.connect { connected ->
-                if (connected) {
-                    Timber.i("Connected to Karoo system")
-                }
+                if (connected) Timber.i("Connected to Karoo system")
             }
             launch {
                 karooSystem.streamDataFlow(DataType.Type.HEART_RATE)
@@ -38,6 +41,13 @@ class KarooWindExtension : KarooExtension("karoowind", "1.0") {
                     }
             }
             headwindManager.connect()
+        }
+    }
+
+    override fun onBonusAction(actionId: String) {
+        when (actionId) {
+            "fan-up" -> headwindManager.adjustSpeed(+HeadwindManager.SPEED_STEP)
+            "fan-down" -> headwindManager.adjustSpeed(-HeadwindManager.SPEED_STEP)
         }
     }
 

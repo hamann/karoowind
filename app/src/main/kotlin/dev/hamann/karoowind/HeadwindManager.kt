@@ -10,6 +10,8 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.ParcelUuid
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import timber.log.Timber
 import java.util.UUID
 
@@ -28,13 +30,14 @@ class HeadwindManager(private val context: Context) {
         val SERVICE_UUID: UUID = UUID.fromString("a026ee0b-0a7d-4ab3-97fa-f1500f9feb8b")
         val FAN_SPEED_CHAR_UUID: UUID = UUID.fromString("a026e038-0a7d-4ab3-97fa-f1500f9feb8b")
         const val DEVICE_NAME = "HEADWIND"
+        const val SPEED_STEP = 10
 
         // Heart rate zones → fan speed % mapping
         private val HR_SPEED_MAP = listOf(
-            0..109 to 0,    // below zone 2: off
-            110..129 to 30, // zone 2: low
-            130..149 to 60, // zone 3-4: medium
-            150..Int.MAX_VALUE to 100, // zone 5: full
+            0..109 to 0,
+            110..129 to 30,
+            130..149 to 60,
+            150..Int.MAX_VALUE to 100,
         )
     }
 
@@ -42,6 +45,12 @@ class HeadwindManager(private val context: Context) {
     private val bluetoothAdapter = bluetoothManager.adapter
     private var gatt: BluetoothGatt? = null
     private var fanSpeedCharacteristic: BluetoothGattCharacteristic? = null
+
+    private val _fanSpeed = MutableStateFlow(0)
+    val fanSpeed: StateFlow<Int> = _fanSpeed
+
+    private val _isManual = MutableStateFlow(false)
+    val isManual: StateFlow<Boolean> = _isManual
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -104,16 +113,23 @@ class HeadwindManager(private val context: Context) {
     }
 
     fun setSpeedFromHeartRate(bpm: Int) {
+        if (_isManual.value) return
         val speed = HR_SPEED_MAP.firstOrNull { bpm in it.first }?.second ?: 0
         setFanSpeed(speed)
     }
 
+    fun adjustSpeed(delta: Int) {
+        _isManual.value = true
+        setFanSpeed(_fanSpeed.value + delta)
+    }
+
     fun setFanSpeed(percent: Int) {
+        val speed = percent.coerceIn(0, 100)
+        _fanSpeed.value = speed
         val characteristic = fanSpeedCharacteristic ?: run {
-            Timber.w("Headwind not connected, cannot set speed")
+            Timber.w("Headwind not connected, speed queued at $speed%")
             return
         }
-        val speed = percent.coerceIn(0, 100)
         Timber.d("Setting fan speed: $speed%")
         characteristic.value = byteArrayOf(speed.toByte())
         gatt?.writeCharacteristic(characteristic)
