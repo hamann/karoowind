@@ -1,0 +1,8 @@
+# Copy to local.properties (not committed to git)
+# GitHub credentials for karoo-ext Maven package registry
+# Generate a token at: https://github.com/settings/tokens (needs read:packages scope)
+gpr.user=YOUR_GITHUB_USERNAME
+gpr.key=YOUR_GITHUB_TOKEN
+
+# Android SDK path (optional if ANDROID_HOME env var is set)
+# sdk.dir=/path/to/android/sdk

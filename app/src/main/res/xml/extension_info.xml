@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ExtensionInfo
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="@string/app_name"
+    android:description="@string/app_description"
+    android:icon="@mipmap/ic_launcher" />
