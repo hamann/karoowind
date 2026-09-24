@@ -1,3 +1,6 @@
+⚠️ Not working and discontinued, please use https://github.com/hamann/karoo-miefquirl
+
+
 # karoowind
 
 A [Hammerhead Karoo 3](https://www.hammerhead.io/) extension that controls the [Wahoo Headwind](https://www.wahoofitness.com/devices/indoor-cycling/accessories/kickr-headwind-buy-us) smart fan over Bluetooth LE.
